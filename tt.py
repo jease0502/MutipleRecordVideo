@@ -21,15 +21,18 @@ def write(queue, cam, top: int) -> None:
     print('Process to write: %s' % os.getpid())
     cap = cv2.VideoCapture(cam,cv2.CAP_DSHOW)
     cap.set(cv2.CAP_PROP_FPS, 15)
+
     # print(cap.get(cv2.CAP_PROP_EX))
     while True:
-        ret, img = cap.read()
+        ret = cap.grab()
         if not ret:
             continue
-        exposure = cap.get(cv2.CAP_PROP_EXPOSURE)
-        cap.set(cv2.CAP_PROP_EXPOSURE, -5 )
-        print(f"exposure {cam} : ",exposure)
-        queue.put(img)
+        else:
+            ret, img = cap.retrieve()
+            exposure = cap.get(cv2.CAP_PROP_EXPOSURE)
+            print(f"exposure {cam} : ",exposure)
+            if(ret):
+                queue.put(img, True, top)
 
 def save(queue, cam_id) -> None:
     print('Process to save: %s' % os.getpid())
@@ -47,20 +50,29 @@ def save(queue, cam_id) -> None:
             break
 
 if __name__ == '__main__':
-    cam1 = 1
-    cam2 = 2
+    cam1 = 2
+    # cam3 = 3
+    cam2 = 1
     q = Manager().Queue()
     q1 = Manager().Queue()
+    q2 = Manager().Queue()
     pw = Process(target=write, args=(q, cam1, 100))
     ps = Process(target=save, args=(q, cam1))
     pw1 = Process(target=write, args=(q1, cam2, 100))
     ps1 = Process(target=save, args=(q1, cam2))
+    # pw2 = Process(target=write, args=(q2, cam3, 100))
+    # ps2 = Process(target=save, args=(q2, cam3))
+    
     
     pw.start()
     pw1.start()
+    # pw2.start()
     ps.start()
     ps1.start()
+    # ps2.start()
     ps.join()
     ps1.join()
+    # ps2.join()
     pw.terminate()
     pw1.terminate()
+    # pw2.terminate()
