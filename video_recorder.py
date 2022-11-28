@@ -2,7 +2,7 @@ from threading import Thread, Event
 from queue import Queue
 import cv2
 import time
-
+import os
 
 class VideoRecorder(Thread):
     def __init__(self, cam_list: list):
